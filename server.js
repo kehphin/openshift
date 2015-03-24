@@ -1,6 +1,12 @@
 var express = require('express');
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
+
+var connectionString = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://localhost/test';
+
+var app = express();
+app.use(express.static(__dirname + '/public'));
+
+mongoose.connect(connectionString);
 
 var CourseSchema = new mongoose.Schema({
     name: String,
@@ -11,48 +17,40 @@ var CourseSchema = new mongoose.Schema({
 
 var CourseModel = mongoose.model('Course', CourseSchema);
 
+/*
 var course1 = new CourseModel({name: "Course 1", category: "DB", description: "weeeee"});
+var course2 = new CourseModel({name: "Course 2", category: "PROG", description: "yolo"});
 course1.save();
+course2.save(); */
 
-var app = express();
 
-app.use(express.static(__dirname + '/public'));
 
 var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 
-var alice = {firstName: "Alice", lastName: "Wonderland"};
-var bob = {firstName: "Bob", lastName: "Marley"};
-var charlie = {firstName: "Charlie", lastName: "Garcia"};
 
-var developers = [alice, bob, charlie];
+// API
 
-
-app.get('/alice', function(req, res) {
-
-  res.send(alice);
+// create a course
+app.post('/api/course', function(req, res) {
+  CourseModel.find(function(err, courses) {
+    res.json(courses);
+  });
 });
 
-// read one
-app.get('/developer/:index', function(req, res){ // express parses url, extracts index and associates it with a value
-  var index = req.params['index'];
-
-  res.json(developers[index]); //respond with text
+// get course by id
+app.get('/api/course/:id', function(req, res) {
+  CourseModel.findById(req.params.id, function(err, course) {
+    res.json(course);
+  });
 });
 
-// read all
-app.get('/developer', function(req, res){
-  res.send(developers); //respond with text
+// get all courses
+app.get('/api/course', function(req, res) {
+  CourseModel.find(function(err, courses) {
+    res.json(courses);
+  });
 });
 
-
-
-app.get('/hello', function(req, res){ // listen for url that has pattern '/hello',  then calls the callback
-  res.send('hello world'); //respond with text
-});
-
-app.get('/goodbye', function(req, res){ // listen for url that has pattern '/goodbye'
-  res.send('goodbye world'); //respond with text
-});
 
 app.listen(port, ip);

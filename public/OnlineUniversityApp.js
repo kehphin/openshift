@@ -9,16 +9,23 @@ app.controller("OnlineUniversityController", function ($scope, $http) {
       { name : "NodeJS 101", category : "PROG", dateCreated : new Date(2013, 4, 1), description : "Awesome"}
     ];
 
+  $scope.add = function() {
+    $('.course-modal').modal('show');
+  }
+
   $scope.edit = function(model) {
     $scope.editedCourse = model;
     $('.course-modal').modal('show');
   }
 
   $scope.save = function(model) {
+
+
+    /*
     $scope.editedCourse = model;
     $('.course-modal').modal('show');
 
-    /*
+
     $http.delete("api/" + index)
     .success(function(response) {
       $scope.developers = response;
