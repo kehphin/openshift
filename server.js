@@ -1,4 +1,19 @@
 var express = require('express');
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/test');
+
+var CourseSchema = new mongoose.Schema({
+    name: String,
+    category: String,
+    dateCreated: {type: Date, default: Date.now},
+    description: String
+}, {collection: "course"});
+
+var CourseModel = mongoose.model('Course', CourseSchema);
+
+var course1 = new CourseModel({name: "Course 1", category: "DB", description: "weeeee"});
+course1.save();
+
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
