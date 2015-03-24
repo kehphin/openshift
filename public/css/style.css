@@ -5,3 +5,7 @@
 .container {
     margin-top: 60px;
 }
+
+.deletion-prompt {
+  padding-top: 8px;
+}

@@ -1,41 +1,42 @@
 var app = angular.module("OnlineUniversityApp", [])
 
 app.controller("OnlineUniversityController", function ($scope, $http) {
-  $scope.courses =
-    [ { name : "Java 101", category : "PROG", dateCreated: new Date(2013, 9, 22), description : "Wow"},
-      { name : "MongoDB 101", category : "DB", dateCreated : new Date(2013, 1, 1), description : "Good"},
-      { name : "Express 101", category : "PROG", dateCreated : new Date(2013, 2, 1), description : "Better"},
-      { name : "AngularJS 101", category : "WEB", dateCreated : new Date(2013, 3, 1), description : "Best"},
-      { name : "NodeJS 101", category : "PROG", dateCreated : new Date(2013, 4, 1), description : "Awesome"}
-    ];
+  $http.get("/api/course").success(function(response) {
+    $scope.courses = response;
+  });
 
   $scope.add = function() {
+    $scope.editedCourse = null;
     $('.course-modal').modal('show');
   }
 
   $scope.edit = function(model) {
     $scope.editedCourse = model;
+    $scope.editedCourse.dateCreated = new Date($scope.editedCourse.dateCreated);
     $('.course-modal').modal('show');
   }
 
   $scope.save = function(model) {
+    if (model._id) {
+      $http.put("/api/course/" + model._id, model)
+      .success(function(response) {
+        $scope.courses = response;
+      });
+    } else {
+      $http.post("/api/course/", model)
+      .success(function(response) {
+        $scope.courses = response;
+      });
+    }
 
-
-    /*
-    $scope.editedCourse = model;
-    $('.course-modal').modal('show');
-
-
-    $http.delete("api/" + index)
-    .success(function(response) {
-      $scope.developers = response;
-    });*/
+    $('.course-modal').modal('hide');
   }
 
-  $scope.remove = function(index) {
-    $http.delete("api/" + index)
+  $scope.remove = function(model) {
+    $http.delete("/api/course/" + model._id)
     .success(function(response) {
-      $scope.developers = response;
+      $scope.courses = response;
+      $('.delete-course-modal').modal('show');
     });
   }
 });

@@ -1,9 +1,15 @@
 var express = require('express');
 var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
+var multer = require('multer');
 
 var connectionString = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://localhost/test';
 
 var app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(multer());
 app.use(express.static(__dirname + '/public'));
 
 mongoose.connect(connectionString);
@@ -17,35 +23,51 @@ var CourseSchema = new mongoose.Schema({
 
 var CourseModel = mongoose.model('Course', CourseSchema);
 
-/*
-var course1 = new CourseModel({name: "Course 1", category: "DB", description: "weeeee"});
-var course2 = new CourseModel({name: "Course 2", category: "PROG", description: "yolo"});
-course1.save();
-course2.save(); */
-
-
-
 var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 
 
 // API
 
-// create a course
+// CREATE course
 app.post('/api/course', function(req, res) {
-  CourseModel.find(function(err, courses) {
-    res.json(courses);
+  var course = new CourseModel(req.body);
+  course.save(function(err, doc) {
+    CourseModel.find(function(err, courses) {
+      res.json(courses);
+    });
   });
 });
 
-// get course by id
+// UPDATE course
+app.put('/api/course/:id', function(req, res) {
+  CourseModel.findById(req.params.id, function(err, course) {
+    course.update(req.body, function(err, count) {
+      CourseModel.find(function(err, courses) {
+        res.json(courses);
+      })
+    })
+  });
+});
+
+// GET course by id
 app.get('/api/course/:id', function(req, res) {
   CourseModel.findById(req.params.id, function(err, course) {
     res.json(course);
   });
 });
 
-// get all courses
+// DELETE course by id
+app.delete('/api/course/:id', function(req, res) {
+  var id = req.params.id;
+  CourseModel.remove({_id: id}, function(err, count) {
+    CourseModel.find(function(err, courses) {
+      res.json(courses);
+    });
+  });
+});
+
+// GET all courses
 app.get('/api/course', function(req, res) {
   CourseModel.find(function(err, courses) {
     res.json(courses);
